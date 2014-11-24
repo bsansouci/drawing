@@ -1,0 +1,23 @@
+{
+  "name": "drawing",
+  "version": "0.0.0",
+  "description": "drawing =======",
+  "main": "index.js",
+  "scripts": {
+    "start": "jsx --watch src/ build/",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bsansouci/drawing.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bsansouci/drawing/issues"
+  },
+  "homepage": "https://github.com/bsansouci/drawing",
+  "dependencies": {
+    "react-tools": "^0.12.1"
+  }
+}
