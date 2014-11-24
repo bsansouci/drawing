@@ -75,7 +75,11 @@ var CheatSheet = React.createClass({
 // will be used as a style for the div.
 var Line = React.createClass({
   render: function(){
-    return <div className="line" style={this.props.style} onmousedown="return false">{this.props.innerHTML}</div>
+    return (
+      <div className="line" style={this.props.style} onmousedown="return false">
+        {this.props.innerHTML}
+      </div>
+      );
   }
 });
 
@@ -144,36 +148,36 @@ var Canvas = React.createClass({
         if(history[i] === null) {
           continue;
         }
-        tmp = <Line style={{
+        var cur = <Line style={{
             position: "absolute",
             border: "1px solid blue",
             width: "100%",
             height: "100%"}} />;
-        array.push(<Line key={history[i].key} style={history[i].style} innerHTML={tmp === null ? (history[i].innerHTML.length === 0 ? null : [history[i].innerHTML]) : [tmp].concat(history[i].innerHTML)} />);
+        array.push(<Line key={history[i].key} style={history[i].style} innerHTML={cur === null ? (history[i].innerHTML.length === 0 ? null : [history[i].innerHTML]) : [cur].concat(history[i].innerHTML)} />);
       }
       if(this.props.futureStates.length > 0) {
         var futureStates = this.props.futureStates;
         var startPos = this.props.curTimePosition - 1;
-        var i = startPos;
+        var k = startPos;
         var l = futureStates.length;
         var prev = null;
-        while(i < l) {
-          if(prev && futureStates[i] === prev) {
-            i++;
+        while(k < l) {
+          if(prev && futureStates[k] === prev) {
+            k++;
             continue;
           }
-          var lines = JSON.parse(futureStates[i]);
+          var futureLines = JSON.parse(futureStates[k]);
 
           futureStatesClasses = futureStatesClasses.concat([
-            <Canvas opacity={1 - (i - startPos) / (l - startPos)}
-                lines={lines}
+            <Canvas opacity={1 - (k - startPos) / (l - startPos)}
+                lines={futureLines}
                 history={[]}
                 future={false}
                 canUpdate={true}
                 futureStates={[]}/>
           ]);
-          i++;
-          prev = futureStates[i];
+          k++;
+          prev = futureStates[k];
         }
       }
     }
@@ -323,7 +327,7 @@ var App = React.createClass({
 
       this.setState({
         box: {}
-      })
+      });
       return false;
     }.bind(this);
 
@@ -333,7 +337,7 @@ var App = React.createClass({
     draw.addEventListener('mouseup', onMouseUp, false);
 
     var onKeyDown = function(e){
-      console.log(e.keyCode);
+      // console.log(e.keyCode);
       switch (e.keyCode) {
         // Enter key
         case 13:
@@ -384,7 +388,7 @@ var App = React.createClass({
               lines: JSON.parse(this.state.savedStates[n])
             });
           }
-          e.preventDefault()
+          e.preventDefault();
           break;
         case 39:
           if(ctrl) {
@@ -394,7 +398,7 @@ var App = React.createClass({
               lines: JSON.parse(this.state.savedStates[n])
             });
           }
-          e.preventDefault()
+          e.preventDefault();
           break;
         case 46:
           var l = this.state.lines;
@@ -407,7 +411,7 @@ var App = React.createClass({
           }
           this.setState({
             lines: n
-          })
+          });
           break;
         case 65:
           if(!ctrl) {
@@ -423,7 +427,7 @@ var App = React.createClass({
             }
             this.setState({
               lines: l
-            })
+            });
           }
           break;
         case 66:
@@ -523,7 +527,7 @@ var App = React.createClass({
       filedrag.style.display = "block";
 
       // file selection
-      function FileSelectHandler(e) {
+      var FileSelectHandler = function(e) {
         // cancel event and hover styling
         FileDragHover(e);
 
@@ -534,21 +538,20 @@ var App = React.createClass({
         for (var i = 0, f; f = files[i]; i++) {
           // Very horrible way of doing it, but I the type of the file doesn't
           // seem to work for the .image that I create
+          var reader = new FileReader();
           if(f.name.split(".")[1] === "image") {
             // Create reader
-            var reader = new FileReader();
             reader.onloadend = function(event) {
               console.log("Done loading.");
               console.log("Parsing ...");
               // We parse the html, get the styles and return an array of styles
               that.setState({
-                lines:  that.state.lines.concat(that.parseHTML(event.target.result))
+                lines: that.state.lines.concat(that.parseHTML(event.target.result))
               });
-              console.log("Done parsing.")
-            }
+              console.log("Done parsing.");
+            };
             reader.readAsText(f);
           } else if (f.type === "image/png") {
-            var reader = new FileReader();
             reader.onloadend = function(event) {
               console.log("Done loading.");
               console.log("Parsing ...");
@@ -558,7 +561,7 @@ var App = React.createClass({
 
               img.src = event.target.result;
 
-              (function(){
+              (function(img, canvas, e){
                 if (img.complete){
                   canvas.width = img.width;
                   canvas.height = img.height;
@@ -568,20 +571,20 @@ var App = React.createClass({
                 } else {
                   setTimeout(arguments.callee, 50);
                 }
-              })();
-            }
+              })(img, canvas, e);
+            };
             reader.readAsDataURL(f);
           }
           console.log("Loading " + f.name + " of type " + f.type + " ...");
         }
 
-      }
+      };
       // file drag hover
-      function FileDragHover(e) {
+      var FileDragHover = function(e) {
         e.stopPropagation();
         e.preventDefault();
         e.target.className = (e.type == "Canvas" ? "hover" : "");
-      }
+      };
     }
   },
 
@@ -657,10 +660,11 @@ var App = React.createClass({
     var dy = y2 - y1;
     var height = Math.sqrt(dx * dx + dy * dy);
 
+    var angle;
     if(this.state.normalMode) {
-      var angle = Math.PI / 2 + Math.atan2(dy, dx);
+      angle = Math.PI / 2 + Math.atan2(dy, dx);
     } else {
-      var angle = Math.atan2(dy, dx);
+      angle = Math.atan2(dy, dx);
     }
 
     var style = {
@@ -670,14 +674,14 @@ var App = React.createClass({
       top: y1 + $(window).scrollTop() - height - 5 - width / 2,
       left: x1 + $(window).scrollLeft() - 8 - width / 2,
       backgroundColor: color
-    }
+    };
 
     var innerHTML = "";
     this.setState({
       lines: this.state.lines.concat([{
                 style: style,
                 innerHTML: innerHTML,
-                key: uniqueIDMaker.generateID()
+                key: "" + x1+y1+x2+y2+width
               }])
     });
   },
