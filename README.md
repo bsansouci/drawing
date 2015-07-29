@@ -6,11 +6,11 @@ A simple drawing web app
 # Install
 
 ```
-sudo npm install
+npm i
 ```
 
 
 # Run
 ```
-npm start
+npm start && open index.html
 ```
